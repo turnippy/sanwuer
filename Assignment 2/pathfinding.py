@@ -26,7 +26,7 @@ class aStar:
 
     # 初始化地图长和宽，开始终止节点，open集合和close集合，
     # 路径集合path用于最后反向遍历找出路径
-    def __init__(self, start, goal, columnNum, rowNum):
+    def __init__(self, start, goal, columnNum, rowNum, mode):
         self.start = start
         self.goal = goal
         
@@ -36,6 +36,11 @@ class aStar:
         self.okSpace = []
         self.notokSpace = []
         self.path = []
+        
+        if mode not in ["greedy", "astar"]:
+            print("wrong input")
+        else:
+            self.mode = mode
 
     def heuristic(self, px, py, qx, qy):
         # Manhattan distance on a grid 
@@ -64,7 +69,12 @@ class aStar:
 
             # 获取F值最小的节点（最短路径）
             # 使用greedy的话这个函数换成get_best_greedy就可以
-            index, node = self.get_best()
+            if self.mode == "astar":
+                index, node = self.get_best()
+            elif self.mode == "greedy":
+                index, node = self.get_best_greedy()
+            else:
+                pass
 
             # if the goal is found
             if self.goal[0]== node.x and self.goal[1]== node.y:
@@ -208,18 +218,14 @@ def write_output(maps):
         outFile.write(''.join(line) + "\n")
     print("WRITING DONE!")
     print()
-    
-def search():
 
-    mapA = read_input("pathfinding_a.txt")
-    
-    # 初始化起始和终点坐标[x,y]
+def search(mapA, mode):
     start = get_start_and_goal('S', mapA)
     goal = get_start_and_goal('G', mapA)
-    
+
     # 初始化整个程序
-    a_star = aStar(start, goal,len(mapA[0]),len(mapA))
-   
+    a_star = aStar(start, goal,len(mapA[0]),len(mapA), mode)
+
     # 从开始几点查找路径
     a_star.find_path(mapA)
 
@@ -236,14 +242,21 @@ def search():
         mapA[y][x] = 'P'
 
     # 打印最短路径长度和搜索区域长度
+    print("Using", mode, "search")
     print("path length is %d" % (len(path)))
     print("searched squares count is %d" % (len(searched)))
 
     # 恢复开始和终止节点的标记
     mapA[start[1]][start[0]] = 'S'
     mapA[goal[1]][goal[0]] = 'G'
+    
+def main():
+    mapGreedy = read_input("pathfinding_a.txt")
+    search(mapGreedy, "greedy")
+    write_output(["greedy"] + mapGreedy)
+    
+    mapAstar = read_input("pathfinding_a.txt")
+    search(mapAstar, "astar")
+    write_output(["A star"] + mapAstar)
 
-    write_output(mapA)
-
-# 开始搜索路径
-search()
+main()
