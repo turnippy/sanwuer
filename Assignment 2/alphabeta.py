@@ -12,16 +12,16 @@ class node:
         if type == 1:
             self.max = True
             self.leaf = False
-            self.value = val
+            #self.value = val
         elif type == -1:
             self.max = False
             self.leaf = False
-            self.value = val
+            #self.value = val
         else:
             self.max = False
             self.leaf = True
             self.value = float(val)
-
+    
 # Helper function to parse a single line of input into tree
 def parse_line (string):
     
@@ -55,40 +55,44 @@ def parse_line (string):
             parent.children.append(child)
     
     #print(tree)
+    for key in tree:
+        print("Node ", key, "has children:")
+        if len(tree[key].children) == 0:
+            continue
+        for c in tree[key].children:
+            print("\t", c)
+    
+    
     print("\tTree successfully created...")
-    return tree[root]
+    return tree[root]           
 
 def alphabeta (current, alpha, beta):
-    
+    print("\tCurrent node is: ")
+    print(current)
+    print("\talpha: %f, beta: %f" %(alpha, beta))
     if current.leaf:
         #if node is leaf
         return current.value
     elif current.max:
         #if node is max
-        best = float("-inf")
         for node in current.children:
             #check value of all children
-            best = max(best, alphabeta(node, alpha, beta))
             #update alpha if necessary
-            alpha = max(alpha, best)
+            alpha = max(alpha, alphabeta(node, alpha, beta))
             
             #prune the remaining children if appropriate
             if alpha >= beta:
-                return best
+                return alpha
     else:
         #if node is min
-        best = float("inf")
         for node in current.children:
             #check value of all children
-            best = min(best, alphabeta(node, alpha, beta))
             #update beta if necessary
-            beta = min(alpha, best)
+            beta = min(alpha, alphabeta(node, alpha, beta))
             
             #prune the remaining children if appropriate
             if beta <= alpha:
-                return best
-            
-    
+                return beta    
 
 if __name__ == "__main__":
 
