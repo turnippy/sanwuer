@@ -1,5 +1,5 @@
 # CISC352 Assignment 2
-# AlphaBeta Pruning
+# Alpha-Beta Pruning
 
 import re as regex
 
@@ -28,8 +28,8 @@ def parse_line (string):
     # Create a list of all expressions in the form "(X,Y)", where
     # X and Y are alphanumeric expressions
     parsed = regex.findall(r"\(([A-Za-z0-9_]+),([A-Za-z0-9_]+)\)", string)
-    if len(parsed) <= 1:
-        print("\tThis tree has one or fewer nodes!")
+    if len(parsed) <= 0:
+        return None
     
     # The tree is implemented as a dict of key-node pairs
     # The root node is the first pair in the first input set
@@ -53,7 +53,7 @@ def parse_line (string):
             parent = tree[p[0]]
             child = tree[p[1]]
             parent.children.append(child)
-    
+    '''
     #print(tree)
     for key in tree:
         print("Node ", key, "has children:")
@@ -61,17 +61,16 @@ def parse_line (string):
             continue
         for c in tree[key].children:
             print("\t", c)
-    
+    '''
     
     print("\tTree successfully created...")
-    return tree[root]           
+    return tree[root]    
 
 def alphabeta (current, alpha, beta):
-    print("\tCurrent node is: ")
-    print(current)
-    print("\talpha: %f, beta: %f" %(alpha, beta))
+    global count
     if current.leaf:
-        #if node is leaf
+        #if node is leaf, then return static evaluation
+        count += 1
         return current.value
     elif current.max:
         #if node is max
@@ -83,36 +82,44 @@ def alphabeta (current, alpha, beta):
             #prune the remaining children if appropriate
             if alpha >= beta:
                 return alpha
+        #return the alpha of max nodes
         return alpha        
     else:
         #if node is min
         for node in current.children:
             #check value of all children
             #update beta if necessary
-            beta = min(alpha, alphabeta(node, alpha, beta))
+            beta = min(beta, alphabeta(node, alpha, beta))
             
             #prune the remaining children if appropriate
             if beta <= alpha:
-                return beta    
+                return beta
+        #return the beta of min nodes
         return beta
 
+# Driver code
 if __name__ == "__main__":
-
     print("Starting minimax evaluation with alpha-beta pruning...\n")
 
     with open("alphabeta.txt", "r") as input:
         input_lines = input.readlines()
-        
+    input.close()    
     print("Input file okay.")
-    print("Processing file...\n")
+    print("Processing file...")
     
+    outfile = open("alphabeta_out.txt","w")    
     n = 1
     for line in input_lines:
-        print("\tParsing line %d in input file..." %(n))
+        count = 0
+        print("\n\tParsing line %d in input file..." %(n))
         root = parse_line(line)
+        if root is None:
+            continue
         solution = alphabeta(root, float("-inf"), float("inf"))
-        print("\tEvaluation for line %d found!" %(n))
+        print("\tEvaluation for graph %d found!" %(n))
+        outfile.write("Graph %d has evaluation %f after examining %d nodes\n" %(n, solution, count))
         n += 1
-        
+            
     print("\nAll inputs processed, writing output to file...")
+    outfile.close()
     print("Output file okay.\nAll done!")

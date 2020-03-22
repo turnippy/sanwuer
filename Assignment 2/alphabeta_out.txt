@@ -1,0 +1,2 @@
+Graph 1 has evaluation 4.000000 after examining 6 nodes
+Graph 2 has evaluation 4.000000 after examining 6 nodes
