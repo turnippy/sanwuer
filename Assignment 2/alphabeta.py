@@ -83,6 +83,7 @@ def alphabeta (current, alpha, beta):
             #prune the remaining children if appropriate
             if alpha >= beta:
                 return alpha
+        return alpha        
     else:
         #if node is min
         for node in current.children:
@@ -93,6 +94,7 @@ def alphabeta (current, alpha, beta):
             #prune the remaining children if appropriate
             if beta <= alpha:
                 return beta    
+        return beta
 
 if __name__ == "__main__":
 
