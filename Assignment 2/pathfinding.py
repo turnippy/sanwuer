@@ -258,11 +258,11 @@ def main():
 
     #This part of code dedicate the search considering diagonal direction
     mapGreedy2 = read_input("pathfinding_b.txt")
-    search(mapGreedy2, "greedy", False)
+    search(mapGreedy2, "greedy", True)
     write_output(["greedy"] + mapGreedy2, "pathfinding_b_out.txt")
 
     mapAstar2 = read_input("pathfinding_b.txt")
-    search(mapAstar, "astar", False)
+    search(mapAstar, "astar", True)
     write_output(["A star"] + mapAstar, "pathfinding_b_out.txt")
 
 main()
