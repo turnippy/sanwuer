@@ -263,7 +263,7 @@ def main():
     write_output(["greedy"] + mapGreedy2, "pathfinding_b_out.txt")
 
     mapAstar2 = read_input("pathfinding_b.txt")
-    search(mapAstar, "astar", True)
-    write_output(["A star"] + mapAstar, "pathfinding_b_out.txt")
+    search(mapAstar2, "astar", True)
+    write_output(["A star"] + mapAstar2, "pathfinding_b_out.txt")
 
 main()

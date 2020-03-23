@@ -1,9 +1,9 @@
 XXXXXXXXXX
-X___XX_X_X
-X_X__X___X
-XSXX___X_X
-X_X__X___X
-X___XX_X_X
+X________X
 X_X__X_X_X
-X__G_X___X
+XS___X_X_X
+X____XXG_X
+X___XX___X
+X________X
+X________X
 XXXXXXXXXX
