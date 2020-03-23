@@ -1,14 +1,4 @@
 import math
-mapStr2 = [
-         "XXXXXXXXXX",
-         "X___XX_X_X",
-         "X_X__X___X",
-         "XSXX___X_X",
-         "X_X__X___X",
-         "X___XX_X_X",
-         "X_X__X_X_X",
-         "X__G_X___X",
-         "XXXXXXXXXX"]
 
 class Node:
     """
@@ -22,45 +12,47 @@ class Node:
         self.distance = distance # 这里只是g(M)
 
 
-class aStar:
+class pathfind:
 
     # 初始化地图长和宽，开始终止节点，open集合和close集合，
     # 路径集合path用于最后反向遍历找出路径
-    def __init__(self, start, goal, columnNum, rowNum, mode):
+    def __init__(self, start, goal, columnNum, rowNum, mode, diag = True):
         self.start = start
         self.goal = goal
-        
+
         self.columnNum = columnNum
         self.rowNum = rowNum
+
+        self.diag = diag
 
         self.okSpace = []
         self.notokSpace = []
         self.path = []
-        
+
         if mode not in ["greedy", "astar"]:
             print("wrong input")
         else:
             self.mode = mode
 
     def heuristic(self, px, py, qx, qy):
-        # Manhattan distance on a grid 
+        # Manhattan distance on a grid
         return abs(px - qx) + abs(py - qy)
 
     # def heuristic(self, ax, ay, bx, by):
     # # Euclidean distance on a grid between node a and b
     #   return math.sqrt(pow(bx-ax,2) + pow(by - ax,2))
-    
+
     # def heuristic(self, ax, ay, bx, by):
-    #   # Chebyshev distance on a grid 
+    #   # Chebyshev distance on a grid
     #   return max(abs(bx-ax),abs(by-ay))
 
     def find_path(self, maps):
-        
+
         # initialize a node
         node = Node(None, self.start[0], self.start[1], float(0))
         while True:
             # to explore the node with smallest f value
-            # from the current node 
+            # from the current node
             self.extend_path(node,maps)
 
             # when there is no choice left to go next
@@ -91,13 +83,17 @@ class aStar:
 
     def extend_path(self, node, maps):
         # 可以从8个方向走，可以走斜线
-        # xs = (-1, 0, 1, -1, 1, -1, 0, 1)
-        # ys = (-1, -1, -1, 0, 0, 1, 1, 1)
+
+        if self.diag:
+            xMoves = (-1, 0, 1, -1, 1, -1, 0, 1)
+            yMoves = (-1, -1, -1, 0, 0, 1, 1, 1)
 
         # we can go up, down, lefy and right but not diagonal
         # 只能走上下左右四个方向，不可以走斜线
-        xMoves = (0, -1, 1, 0)
-        yMoves = (-1, 0, 0, 1)
+        else:
+            xMoves = (0, -1, 1, 0)
+            yMoves = (-1, 0, 0, 1)
+
         for xMove, yMove in zip(xMoves, yMoves):
 
             nextX, nextY = xMove + node.x, yMove + node.y
@@ -212,32 +208,32 @@ def read_input(fileName):
         input_grid.append(line)
     return input_grid
 
-def write_output(maps):
-    outFile = open("pathfinding_a_out.txt","a")
+def write_output(maps, filename):
+    outFile = open(filename,"a")
     for line in maps:
         outFile.write(''.join(line) + "\n")
     print("WRITING DONE!")
     print()
 
-def search(mapA, mode):
+def search(mapA, mode, diag = True):
     start = get_start_and_goal('S', mapA)
     goal = get_start_and_goal('G', mapA)
 
     # 初始化整个程序
-    a_star = aStar(start, goal,len(mapA[0]),len(mapA), mode)
+    pathway = pathfind(start, goal,len(mapA[0]),len(mapA), mode, diag)
 
     # 从开始几点查找路径
-    a_star.find_path(mapA)
+    pathway.find_path(mapA)
 
     # 标记已搜索区域为'-'
     # 已搜索区域=open+close
-    searched = a_star.get_searched()
+    searched = pathway.get_searched()
     for x, y in searched:
         mapA[y] = list(mapA[y])
         mapA[y][x] ='>'
 
     # 标记路径为'>'
-    path = a_star.path
+    path = pathway.path
     for x, y in path:
         mapA[y][x] = 'P'
 
@@ -249,14 +245,24 @@ def search(mapA, mode):
     # 恢复开始和终止节点的标记
     mapA[start[1]][start[0]] = 'S'
     mapA[goal[1]][goal[0]] = 'G'
-    
+
 def main():
+    #This part of code dedicate the search without considering diagonal direction
     mapGreedy = read_input("pathfinding_a.txt")
-    search(mapGreedy, "greedy")
-    write_output(["greedy"] + mapGreedy)
-    
+    search(mapGreedy, "greedy", False)
+    write_output(["greedy"] + mapGreedy, "pathfinding_a_out.txt")
+
     mapAstar = read_input("pathfinding_a.txt")
-    search(mapAstar, "astar")
-    write_output(["A star"] + mapAstar)
+    search(mapAstar, "astar", False)
+    write_output(["A star"] + mapAstar, "pathfinding_a_out.txt")
+
+    #This part of code dedicate the search considering diagonal direction
+    mapGreedy2 = read_input("pathfinding_b.txt")
+    search(mapGreedy2, "greedy", False)
+    write_output(["greedy"] + mapGreedy2, "pathfinding_b_out.txt")
+
+    mapAstar2 = read_input("pathfinding_b.txt")
+    search(mapAstar, "astar", False)
+    write_output(["A star"] + mapAstar, "pathfinding_b_out.txt")
 
 main()
