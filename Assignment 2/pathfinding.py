@@ -1,21 +1,41 @@
+#Solution for CISC352 Assignment 2 Part 1 by group 8.
+#This program implement Astar algorithm as well as greedy algorithm to perform
+#path search.
+
 import math
 
+"""Node class represent each node that is being seached or has been searched
+
+Attributes:
+  parent: The parent node of this current node
+  x, y: Denotes the vertical, horizontal coordinates of this node
+  distance: The actual cost of this node(heuristic value is not considered for this value)
+
+"""
 class Node:
-    """
-    用于节点的表示，parent用来在成功的时候回溯路径（相当于一个链表）
-    """
 
     def __init__(self, parent, x, y, distance):
         self.parent = parent
         self.x = x
         self.y = y
-        self.distance = distance # 这里只是g(M)
+        self.distance = distance
 
+"""pathfind class is the main algorithm of search
 
+Attributes:
+  start: The start position of the map
+  goal: The goal position of the map
+  columnNum: The number of column in the map that is being searched
+  rowNum: The number of row in the map that is being searched
+  diag: A boolean value to see if diagonal direction is considered
+  okSpace: A list where available path will be considered
+  notokSpace: A list where available path will not be considered due to heuristic value
+  mode: A string value which define which algorithm to use: Astar or greedy
+
+"""
 class pathfind:
 
-    # 初始化地图长和宽，开始终止节点，open集合和close集合，
-    # 路径集合path用于最后反向遍历找出路径
+    #initialze function which initialize the map and all the attributes
     def __init__(self, start, goal, columnNum, rowNum, mode, diag = True):
         self.start = start
         self.goal = goal
@@ -29,38 +49,33 @@ class pathfind:
         self.notokSpace = []
         self.path = []
 
+        #Check if mode entered is accepted
         if mode not in ["greedy", "astar"]:
             print("wrong input")
         else:
             self.mode = mode
 
-    def heuristic(self, px, py, qx, qy):
-        # Manhattan distance on a grid
-        return abs(px - qx) + abs(py - qy)
+    #heuristic() defines the heuristic function which is chose to be the
+    #Chebyshev distance. This function takes in positions for two nodes and
+    #return their Chebyshev distance
+    def heuristic(self, ax, ay, bx, by):
+      return max(abs(bx-ax),abs(by-ay))
 
-    # def heuristic(self, ax, ay, bx, by):
-    # # Euclidean distance on a grid between node a and b
-    #   return math.sqrt(pow(bx-ax,2) + pow(by - ax,2))
-
-    # def heuristic(self, ax, ay, bx, by):
-    #   # Chebyshev distance on a grid
-    #   return max(abs(bx-ax),abs(by-ay))
-
+    #find_path() finds paths start from start node and append them into okSpace
+    #and notokSpace respectively base on different algorithm
     def find_path(self, maps):
 
-        # initialize a node
+        #initialize a node
         node = Node(None, self.start[0], self.start[1], float(0))
         while True:
-            # to explore the node with smallest f value
-            # from the current node
+            #to explore the node with smallest f value from the current node
             self.extend_path(node,maps)
 
             # when there is no choice left to go next
             if len(self.okSpace) == 0:
                 return
 
-            # 获取F值最小的节点（最短路径）
-            # 使用greedy的话这个函数换成get_best_greedy就可以
+            #Get the best node base on different algorithm's evaluation
             if self.mode == "astar":
                 index, node = self.get_best()
             elif self.mode == "greedy":
@@ -68,28 +83,26 @@ class pathfind:
             else:
                 pass
 
-            # if the goal is found
+            #if the goal is found, then the algorithm start to trace back
             if self.goal[0]== node.x and self.goal[1]== node.y:
-                # trace back
                 while node:
                     self.path.append((node.x, node.y))
                     node = node.parent
                 return
-            # if it is the node with smallest f value
-            # delete it from okSpace and add it into notokSpace
+
+            #if it is the node with smallest evaluation, delete it from okSpace and add it into notokSpace
             else:
                 self.notokSpace.append(node)
                 del self.okSpace[index]
 
+    #extend_path() expand a node and retrieve the path
+    #Diagonal direction will be considered base on self.diag
     def extend_path(self, node, maps):
-        # 可以从8个方向走，可以走斜线
 
         if self.diag:
             xMoves = (-1, 0, 1, -1, 1, -1, 0, 1)
             yMoves = (-1, -1, -1, 0, 0, 1, 1, 1)
 
-        # we can go up, down, lefy and right but not diagonal
-        # 只能走上下左右四个方向，不可以走斜线
         else:
             xMoves = (0, -1, 1, 0)
             yMoves = (-1, 0, 0, 1)
@@ -98,8 +111,7 @@ class pathfind:
 
             nextX, nextY = xMove + node.x, yMove + node.y
 
-            # check if the node hit an obstacle
-            # or if the it overstep the range
+            # Check if the node hit an obstacle or if the it overstep the range
             if nextX < 0 or nextX >= self.columnNum:
                 continue
             elif nextY < 0 or nextY >= self.rowNum:
@@ -107,18 +119,18 @@ class pathfind:
             elif maps[nextY][nextX] == 'X':
                 continue
 
-            # 生成新的节点和g(M)值，get_cost可以默认为1，这里为了考虑斜线和直线不同
+            #initialze new node, base on above searhc
             newNode = Node(node, nextX, nextY, node.distance + self.get_cost(node,nextX,nextY))
 
-            # when the new generated node is in the notokSpace list
-            # means the previous path is better
-            # thus ignore the current node
+            #when the new generated node is in the notokSpace list, means the previous path is better
+            #thus ignore the current node
             if self.node_in(newNode, self.notokSpace) != -1:
                 continue
 
-            # check if the new generated node in the okSpace
+            #check if the new generated node in the okSpace
             index = self.node_in(newNode, self.okSpace)
-            # if it is not in okSpace
+
+            #if it is not in okSpace
             if index != -1:
                 if self.okSpace[index].distance > newNode.distance:
                     self.okSpace[index].parent = node
@@ -126,17 +138,12 @@ class pathfind:
                 continue
             else:
                 self.okSpace.append(newNode)
-
+    #Evaluation function for Astar algorithm
     def get_best(self):
         best = None
-        bestValue = float("inf")  # 如果你修改的地图很大，可能需要修改这个值
+        bestValue = float("inf")
         bestIndex = -1
         for index, i in enumerate(self.okSpace):
-            # f = i.dist + math.sqrt(
-            #     (self.end[0] - i.x) * (self.end[0] - i.x)
-            #     + (self.end[1] - i.y) * (self.end[1] - i.y)) * 1.2
-
-            #使用Euclidean distance as heuristic
             fValue = i.distance + self.heuristic(self.goal[0], self.goal[1], i.x, i.y)
             currentValue = fValue
             if currentValue < bestValue:
@@ -145,18 +152,12 @@ class pathfind:
                 bestIndex = index
         return bestIndex, best
 
-    #evaluate function for greedy algortithm
-
+    #Evaluation function for greedy algortithm
     def get_best_greedy(self):
         best = None
-        bestValue = 1000000  # 如果你修改的地图很大，可能需要修改这个值
+        bestValue = float("inf")
         bestIndex = -1
         for index, i in enumerate(self.okSpace):
-            # f = i.dist + math.sqrt(
-            #     (self.end[0] - i.x) * (self.end[0] - i.x)
-            #     + (self.end[1] - i.y) * (self.end[1] - i.y)) * 1.2
-
-            #使用Euclidean distance as heuristic，在greedy下把i.dist去掉了
             fValue = self.heuristic(self.goal[0], self.goal[1], i.x, i.y)
             currentValue = fValue  # 获取F值
             if currentValue < bestValue:  # 比以前的更好，即F值更小
@@ -165,6 +166,7 @@ class pathfind:
                 bestIndex = index
         return bestIndex, best
 
+    #get_searched() append all the searched path to a list
     def get_searched(self):
         searched = []
         for i in self.okSpace:
@@ -173,13 +175,8 @@ class pathfind:
             searched.append((i.x, i.y))
         return searched
 
+    #get_cost() returns the cost for going from one node to another
     def get_cost(self, p, new_x, new_y):
-        """
-        上下左右直走，代价为1.0，斜走，代价为1.4
-        """
-        # if p.x == new_x or p.y == new_y:
-        #     return 1.0
-        # return 1.4
 
         return 1.0
 
@@ -189,6 +186,8 @@ class pathfind:
                 return i
         return -1
 
+#get_start_and_goal() retrieve the start position and the goal position
+#from the map
 def get_start_and_goal(letter, MapData):
     for y, line in enumerate(MapData):
         try:
@@ -199,6 +198,7 @@ def get_start_and_goal(letter, MapData):
             break
     return [x, y]
 
+#function for reading file
 def read_input(fileName):
     file = open(fileName, "r")
     lines = file.readlines()
@@ -208,6 +208,7 @@ def read_input(fileName):
         input_grid.append(line)
     return input_grid
 
+#function for writing file
 def write_output(maps, filename):
     outFile = open(filename,"a")
     for line in maps:
@@ -215,34 +216,34 @@ def write_output(maps, filename):
     print("WRITING DONE!")
     print()
 
+#search() combine all the functions define in pathfind class and perform
+#the main search step
 def search(mapA, mode, diag = True):
     start = get_start_and_goal('S', mapA)
     goal = get_start_and_goal('G', mapA)
 
-    # 初始化整个程序
+    #Initialize the pathfind class
     pathway = pathfind(start, goal,len(mapA[0]),len(mapA), mode, diag)
 
-    # 从开始几点查找路径
+    #Search path from start
     pathway.find_path(mapA)
 
-    # 标记已搜索区域为'-'
-    # 已搜索区域=open+close
+    #Denote all the searced path as > in the map
     searched = pathway.get_searched()
     for x, y in searched:
         mapA[y] = list(mapA[y])
         mapA[y][x] ='>'
 
-    # 标记路径为'>'
+    #Denote the choose path as P in the map
     path = pathway.path
     for x, y in path:
         mapA[y][x] = 'P'
 
-    # 打印最短路径长度和搜索区域长度
+    #Print result
     print("Using", mode, "search")
     print("path length is %d" % (len(path)))
     print("searched squares count is %d" % (len(searched)))
 
-    # 恢复开始和终止节点的标记
     mapA[start[1]][start[0]] = 'S'
     mapA[goal[1]][goal[0]] = 'G'
 
